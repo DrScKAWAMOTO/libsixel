@@ -60,3 +60,6 @@ converters/sixel2png
 converters/*.sixel
 converters/*.png
 tools/libsixel-config
+GPATH
+GRTAGS
+GTAGS

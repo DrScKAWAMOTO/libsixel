@@ -254,8 +254,8 @@ read_palette(png_structp png_ptr,
     if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
         png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, NULL);
     }
-    if (num_trans > 0) {
-        *transparent = trans[0];
+    if ((num_trans > 0) && (trans[0] == 0)) {
+        *transparent = 0;
     }
     for (i = 0; i < ncolors; ++i) {
         if (pbackground && i < num_trans) {

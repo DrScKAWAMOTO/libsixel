@@ -267,15 +267,13 @@ sixel_put_node(
     SIXELSTATUS status = SIXEL_FALSE;
     int nwrite;
 
-    if (ncolors != 2 || keycolor == (-1)) {
-        /* designate palette index */
-        if (output->active_palette != np->pal) {
-            sixel_putc(output->buffer + output->pos, '#');
-            sixel_advance(output, 1);
-            nwrite = sixel_putnum((char *)output->buffer + output->pos, np->pal);
-            sixel_advance(output, nwrite);
-            output->active_palette = np->pal;
-        }
+    /* designate palette index */
+    if (output->active_palette != np->pal) {
+        sixel_putc(output->buffer + output->pos, '#');
+        sixel_advance(output, 1);
+        nwrite = sixel_putnum((char *)output->buffer + output->pos, np->pal);
+        sixel_advance(output, nwrite);
+        output->active_palette = np->pal;
     }
 
     for (; *x < np->sx; ++*x) {
@@ -307,7 +305,7 @@ end:
 
 
 static SIXELSTATUS
-sixel_encode_header(int width, int height, sixel_output_t *output)
+sixel_encode_header(int width, int height, int keycolor, sixel_output_t *output)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int nwrite;
@@ -331,6 +329,8 @@ sixel_encode_header(int width, int height, sixel_output_t *output)
         }
     }
 
+    if (keycolor == 0)
+        p[1] = 1;
     if (p[2] == 0) {
         pcount--;
         if (p[1] == 0) {
@@ -531,7 +531,7 @@ sixel_encode_body(
         goto end;
     }
 
-    if (!bodyonly && (ncolors != 2 || keycolor == (-1))) {
+    if (!bodyonly) {
         if (output->palette_type == SIXEL_PALETTETYPE_HLS) {
             for (n = 0; n < ncolors; n++) {
                 status = output_hls_palette_definition(output, palette, n, keycolor);
@@ -837,7 +837,7 @@ sixel_encode_dither(
         break;
     }
 
-    status = sixel_encode_header(width, height, output);
+    status = sixel_encode_header(width, height, dither->keycolor, output);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -1442,7 +1442,7 @@ next:
             orig_height = height;
 
             if (output_count++ == 0) {
-                status = sixel_encode_header(width, height, output);
+                status = sixel_encode_header(width, height, 255, output);
                 if (SIXEL_FAILED(status)) {
                     goto error;
                 }
@@ -1479,7 +1479,7 @@ next:
 
 end:
     if (output_count == 0) {
-        status = sixel_encode_header(width, height, output);
+        status = sixel_encode_header(width, height, 255, output);
         if (SIXEL_FAILED(status)) {
             goto error;
         }
